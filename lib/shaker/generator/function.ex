@@ -16,19 +16,13 @@ defmodule Shaker.Generator.Function do
     end)
   end
 
-  defp gen_func(name, args, kw) do
-    body = gen_kw_body(kw)
+  defp gen_func(name, args, body) do
+    body = Macro.escape(body)
     quote do
       def unquote(name)(unquote_splicing(args)) do
         unquote(body)
       end
     end
-  end
-
-  defp gen_kw_body(keyword) do
-    Enum.map(keyword, fn {key, value} when is_atom(key) ->
-      {key, Macro.escape(value)}
-    end)
   end
 
 end
