@@ -4,16 +4,14 @@ defmodule Shaker.Parsers.AppSrc do
 
   def parse(root_path) do
     case read_app_src(root_path) do
-      {:ok, app_src_data} -> do_parse(app_src_data)
+      {:ok, app_src_data} -> {:ok, do_parse(app_src_data)}
       error -> error
     end
   end
 
   def read_app_src(root_path) do
-    with [path_to_app_src] <-
-           Path.wildcard(Path.join(root_path, @app_src_file_wildcard)) |> IO.inspect(),
-         {:ok, [{:application, app_name, app_keyword}]} <-
-           :file.consult(path_to_app_src) |> IO.inspect() do
+    with [path_to_app_src] <- Path.wildcard(Path.join(root_path, @app_src_file_wildcard)),
+         {:ok, [{:application, app_name, app_keyword}]} <- :file.consult(path_to_app_src) do
       {:ok, {app_name, app_keyword}}
     else
       _ -> {:error, :bad_file}
@@ -21,9 +19,21 @@ defmodule Shaker.Parsers.AppSrc do
   end
 
   def do_parse({app_name, app_keyword}) do
-    initial_structure = %{
-      '$errors': [],
+    Enum.reduce(
+      app_keyword,
+      initial_structure(app_name),
+      &proceed_app_src_entry/2
+    )
+  end
+
+  @spec initial_structure(app_name :: atom()) :: map()
+  def initial_structure(app_name) do
+    %{
+      # Not proceeded data here
+      "$errors": [],
+      # def application - part goes here
       application: %{},
+      # project and nested data goes here
       project: %{
         app: app_name,
         package: %{
@@ -31,12 +41,6 @@ defmodule Shaker.Parsers.AppSrc do
         }
       }
     }
-
-    Enum.reduce(
-      app_keyword,
-      initial_structure,
-      &proceed_app_src_entry/2
-    )
   end
 
   def proceed_app_src_entry({:description, description}, project_structure) do
@@ -46,6 +50,7 @@ defmodule Shaker.Parsers.AppSrc do
       :erlang.list_to_binary(description)
     )
   end
+
   def proceed_app_src_entry({:vsn, version}, project_structure) do
     put_in(
       project_structure,
@@ -53,6 +58,7 @@ defmodule Shaker.Parsers.AppSrc do
       :erlang.list_to_binary(version)
     )
   end
+
   def proceed_app_src_entry({:mod, mod}, project_structure) do
     # Mod goes as-is - basically it's a tuple
     put_in(
@@ -61,6 +67,7 @@ defmodule Shaker.Parsers.AppSrc do
       mod
     )
   end
+
   def proceed_app_src_entry({:applications, apps}, project_structure) do
     # applications in mix are defined as extra_applications
     put_in(
@@ -72,6 +79,7 @@ defmodule Shaker.Parsers.AppSrc do
       |> Enum.into([])
     )
   end
+
   def proceed_app_src_entry({:env, env}, project_structure) do
     # env goes inside application data
     put_in(
@@ -80,6 +88,7 @@ defmodule Shaker.Parsers.AppSrc do
       env
     )
   end
+
   def proceed_app_src_entry({:licenses, licenses}, project_structure) do
     # licenses goes inside project's package data
     put_in(
@@ -89,6 +98,7 @@ defmodule Shaker.Parsers.AppSrc do
       |> Enum.map(&:erlang.list_to_binary/1)
     )
   end
+
   def proceed_app_src_entry({:links, links}, project_structure) do
     # links goes inside project's package data
     put_in(
@@ -97,7 +107,6 @@ defmodule Shaker.Parsers.AppSrc do
       links
     )
   end
-
 
   # Registered goes here - it's skipped
   def proceed_app_src_entry({:registered, _}, acc), do: acc
