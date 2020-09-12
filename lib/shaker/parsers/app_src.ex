@@ -104,7 +104,10 @@ defmodule Shaker.Parsers.AppSrc do
     put_in(
       project_structure,
       [:project, :package, :links],
-      links
+      Enum.map(
+        links,
+        fn {name, value} -> {"#{name}", "#{value}"} end
+      )
     )
   end
 

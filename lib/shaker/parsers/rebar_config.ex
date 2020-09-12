@@ -17,8 +17,10 @@ defmodule Shaker.Parsers.RebarConfig do
   end
 
 
-  def parse(project_root) do
-    %{}
-    |> define_project_type(project_root)
-  end
+  # def parse(root_path) do
+  #   case read_rebar_config(root_path) do
+  #     {:ok, app_src_data} -> {:ok, do_parse(app_src_data)}
+  #     error -> error
+  #   end
+  # end
 end
