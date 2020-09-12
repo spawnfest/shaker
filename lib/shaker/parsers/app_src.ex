@@ -1,24 +1,18 @@
 defmodule Shaker.Parsers.AppSrc do
+
+  import Shaker.Parsers.Common
+
   @app_src_file_wildcard "**/*.app.src"
   @autoloaded_erlang_applications MapSet.new([:kernel, :stdlib, :elixir])
 
   def parse(root_path) do
-    case read_app_src(root_path) do
-      {:ok, app_src_data} -> {:ok, do_parse(app_src_data)}
+    case read_from(root_path, @app_src_file_wildcard) do
+      {:ok, [{:application, name, kw}]} -> {:ok, do_parse(name, kw)}
       error -> error
     end
   end
 
-  def read_app_src(root_path) do
-    with [path_to_app_src] <- Path.wildcard(Path.join(root_path, @app_src_file_wildcard)),
-         {:ok, [{:application, app_name, app_keyword}]} <- :file.consult(path_to_app_src) do
-      {:ok, {app_name, app_keyword}}
-    else
-      _ -> {:error, :bad_file}
-    end
-  end
-
-  def do_parse({app_name, app_keyword}) do
+  def do_parse(app_name, app_keyword) do
     Enum.reduce(
       app_keyword,
       initial_structure(app_name),
