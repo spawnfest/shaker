@@ -6,6 +6,9 @@ defmodule Shaker.Resolver.Deps do
 
   @behaviour Shaker.Resolver
 
+  defguardp is_git(t) when is_tuple(t) and
+    ((:erlang.element(1, t) == :git) or (:erlang.element(1, t) == :git_subdir))
+
   def convert(dep_name) when is_atom(dep_name) do
     {:ok, {dep_name, ">= 0.0.0"}}
   end
@@ -26,18 +29,11 @@ defmodule Shaker.Resolver.Deps do
   # Source dependencies
 
   # Git
-  def convert({dep_name, {:git, repo_url}}) when is_atom(dep_name) do
-    {:ok, {dep_name, [{:git, "#{repo_url}"}]}}
+  def convert({dep_name, t}) when is_git(t) and is_atom(dep_name) do
+    {:ok, {dep_name, convert_git(t)}}
   end
-
-  def convert({dep_name, {:git, repo_url, {ref_type, ref_value}}}) when is_atom(dep_name) do
-    {:ok, {dep_name, [{:git, "#{repo_url}"}, {ref_type, "#{ref_value}"}]}}
-  end
-
-  def convert({dep_name, {:git_subdir, repo_url, {ref_type, ref_value}, subdir_path}})
-      when is_atom(dep_name) do
-    {:ok,
-     {dep_name, [{:git, "#{repo_url}"}, {ref_type, "#{ref_value}"}, {:sparse, "#{subdir_path}"}]}}
+  def convert({dep_name, b, t}) when is_list(b) and is_git(t) and is_atom(dep_name) do
+    {:ok, {dep_name, convert_git(t)}}
   end
 
   # Hg is not supported
@@ -52,8 +48,21 @@ defmodule Shaker.Resolver.Deps do
 
   def convert(dep_record) do
     case elem(dep_record, 0) do
-      dep when is_atom(dep) -> {:error, {:unknown, dep}}
+      dep when is_atom(dep) -> {:error, {:unknown_dep, dep}}
       _ -> {:error, {:deps, :parse, dep_record}}
     end
+  end
+
+  defp convert_git({:git, repo_url, {ref_type, ref_value}}) do
+    [{:git, "#{repo_url}"}, {ref_type, "#{ref_value}"}]
+  end
+  defp convert_git({:git, repo_url}) do
+    [{:git, "#{repo_url}"}]
+  end
+  defp convert_git({:git, repo_url, 'HEAD'}) do
+    [{:git, "#{repo_url}"}]
+  end
+  defp convert_git({:git_subdir, repo_url, {ref_type, ref_value}, subdir_path}) do
+    [{:git, "#{repo_url}"}, {ref_type, "#{ref_value}"}, {:sparse, "#{subdir_path}"}]
   end
 end

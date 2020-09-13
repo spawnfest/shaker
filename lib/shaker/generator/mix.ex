@@ -24,6 +24,7 @@ defmodule Shaker.Generator.Mix do
     |> gen_module(name)
   end
 
+  @spec gen_funcs(atom(), Keyword.t()) :: [Macro.t()]
   defp gen_funcs(name, keyword) do
     {values, funcs} =
       Enum.reduce(keyword, {[], []}, fn {key, value}, {values, funcs} ->
@@ -83,21 +84,14 @@ defmodule Shaker.Generator.Mix do
     end
   end
   defp gen_func_or_value(key, env_pairs) do
+    anyenv_pairs = env_pairs[:"$anyenv"] || []
     clauses =
-      case Keyword.fetch(env_pairs, :"$anyenv") do
-        {:ok, anyenv_pairs} ->
-          env_pairs =
-            env_pairs
-            |> Keyword.delete(:"$anyenv")
-            |> Enum.map(fn {env, pairs} ->
-              {env, merge_vals(pairs, anyenv_pairs)}
-            end)
-
-          env_pairs ++ [{Macro.var(:_, nil), anyenv_pairs}]
-
-        _ ->
-          env_pairs
-      end
+      env_pairs
+      |> Keyword.delete(:"$anyenv")
+      |> Enum.map(fn {env, pairs} ->
+        {env, merge_vals(anyenv_pairs, pairs)}
+      end)
+      |> Kernel.++([{Macro.var(:_, nil), anyenv_pairs}])
 
     {:env_funcs, Function.gen_clauses(key, clauses, private: true)}
   end
@@ -116,10 +110,10 @@ defmodule Shaker.Generator.Mix do
   @spec sort_funcs([Macro.t()]) :: Macro.t()
   defp sort_funcs(functions) do
     Enum.sort_by(functions, fn
-      {{:def, _, _,}, _, [{:project, _, _} | _]} ->
+      {{:def, _, _}, _, [{:project, _, _} | _]} ->
         0
 
-      {{:def, _, _,}, _, [{:application, _, _} | _]} ->
+      {{:def, _, _}, _, [{:application, _, _} | _]} ->
         1
 
       other ->
