@@ -9,11 +9,17 @@ defmodule Shaker.Errors do
 
   alias Shaker.Model.Mix, as: Model
 
+  @spec render_until_empty(Model.t()) :: Model.t()
+  def render_until_empty(%{"$errors": []} = model), do: model
+  def render_until_empty(model) do
+    render_until_empty(render(model))
+  end
+
   @spec render(Model.t()) :: Model.t()
   def render(%{"$errors": errors} = model) do
     errors
     |> List.flatten()
-    |> Enum.reduce(model, &render_one/2)
+    |> Enum.reduce(%{model | "$errors": []}, &render_one/2)
   end
 
   @spec render_one(any(), Model.t()) :: Model.t()

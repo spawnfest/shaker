@@ -4,6 +4,8 @@ defmodule Shaker.Parsers.RebarConfig do
   Parses rebar.config file
   """
 
+  @behaviour Shaker.Parsers
+
   @rebar_config_file_wildcard "rebar.config"
 
   alias Shaker.Model.Mix, as: Model
@@ -26,11 +28,11 @@ defmodule Shaker.Parsers.RebarConfig do
     end
   end
 
-  def do_parse(model, rebar_config_keyword) do
+  defp do_parse(model, rebar_config_keyword) do
     Enum.reduce(rebar_config_keyword, model, &proceed_rebar_config_entry/2)
   end
 
-  def proceed_rebar_config_entry({:alias, alias_list}, model) do
+  defp proceed_rebar_config_entry({:alias, alias_list}, model) do
     alias_list =
       Enum.map(alias_list, fn {alias_name, alias_resolution_list} ->
         {
@@ -45,7 +47,7 @@ defmodule Shaker.Parsers.RebarConfig do
     Model.put(model, :aliases, alias_list)
   end
 
-  def proceed_rebar_config_entry({:erl_opts, erl_opts_list}, model) do
+  defp proceed_rebar_config_entry({:erl_opts, erl_opts_list}, model) do
     converted_opts =
       Enum.map(erl_opts_list, fn
         {:platform_define, platform, options} ->
@@ -62,33 +64,33 @@ defmodule Shaker.Parsers.RebarConfig do
   end
 
   # ESCRIPT part
-  def proceed_rebar_config_entry({:escript_main_app, main}, model) do
+  defp proceed_rebar_config_entry({:escript_main_app, main}, model) do
     Model.append(model, :escript, :main_module, main)
   end
 
-  def proceed_rebar_config_entry({:escript_name, name}, model) do
+  defp proceed_rebar_config_entry({:escript_name, name}, model) do
     Model.append(model, :escript, :name, name)
   end
 
-  def proceed_rebar_config_entry({:escript_incl_apps, _apps_list}, model) do
+  defp proceed_rebar_config_entry({:escript_incl_apps, _apps_list}, model) do
     # Skiping for elixir projects
     model
   end
 
-  def proceed_rebar_config_entry({:escript_emu_args, args}, model) do
+  defp proceed_rebar_config_entry({:escript_emu_args, args}, model) do
     Model.append(model, :escript, :emu_args, args)
   end
 
-  def proceed_rebar_config_entry({:escript_shebang, shebang}, model) do
+  defp proceed_rebar_config_entry({:escript_shebang, shebang}, model) do
     Model.append(model, :escript, :shebang, shebang)
   end
 
-  def proceed_rebar_config_entry({:escript_comment, comment}, model) do
+  defp proceed_rebar_config_entry({:escript_comment, comment}, model) do
     Model.append(model, :escript, :comment, comment)
   end
 
   # HEX part
-  def proceed_rebar_config_entry({:hex, hex_specification}, model) do
+  defp proceed_rebar_config_entry({:hex, hex_specification}, model) do
     # Hex is not covered by mix file, it must be  specified separately
     # with mix tasks.
     # This should be noticed in migration guide
@@ -96,23 +98,23 @@ defmodule Shaker.Parsers.RebarConfig do
   end
 
   # Minimum OTP version
-  def proceed_rebar_config_entry({:minimum_otp_version, _}, model) do
+  defp proceed_rebar_config_entry({:minimum_otp_version, _}, model) do
     # FIXME is skiped for now
     model
   end
 
   # Deps
-  def proceed_rebar_config_entry({:deps, deps_list}, model) do
+  defp proceed_rebar_config_entry({:deps, deps_list}, model) do
     resolve_with(model, :deps, deps_list, &DepsResolver.convert/1)
   end
 
   #Dialyzer
-  def proceed_rebar_config_entry({:dialyzer, dialyzer_list}, model) do
+  defp proceed_rebar_config_entry({:dialyzer, dialyzer_list}, model) do
     resolve_with(model, :dialyzer, dialyzer_list, &DialyzerResolver.convert/1)
   end
 
   #Profiles
-  def proceed_rebar_config_entry({:profiles, profiles}, model) do
+  defp proceed_rebar_config_entry({:profiles, profiles}, model) do
     Enum.reduce(profiles, model, fn {env, config}, model ->
       other = do_parse(%Model{}, config)
       Model.merge_env(model, other, env)
@@ -122,7 +124,7 @@ defmodule Shaker.Parsers.RebarConfig do
   ### Tests
 
   # Eunit
-  def proceed_rebar_config_entry({:eunit_opts, opts}, model) do
+  defp proceed_rebar_config_entry({:eunit_opts, opts}, model) do
     model
     |> Model.append(:deps, :mix_eunit, "~> 0.2", :test)
     |> Model.append(:preffered_cli_env, :eunit, :test)
@@ -130,7 +132,7 @@ defmodule Shaker.Parsers.RebarConfig do
   end
 
   #Common test
-  def proceed_rebar_config_entry({k, _}, model
+  defp proceed_rebar_config_entry({k, _}, model
   ) when k in ~w[ct_first_files ct_otps ct_readable]a do
     model
     |> Model.append(:deps, :ctex, "~> 0.1", :test)
@@ -138,7 +140,7 @@ defmodule Shaker.Parsers.RebarConfig do
   end
 
   # GENERAL Case
-  def proceed_rebar_config_entry(unsupported, model) do
+  defp proceed_rebar_config_entry(unsupported, model) do
     Model.add_errors(model, [unsupported])
   end
 

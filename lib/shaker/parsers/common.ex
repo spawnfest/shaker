@@ -1,4 +1,9 @@
 defmodule Shaker.Parsers.Common do
+
+  @moduledoc """
+  Common functions for Parsers
+  """
+
   def read_from(root_path, wildcard) do
     root_path
     |> Path.join(wildcard)

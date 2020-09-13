@@ -4,6 +4,8 @@ defmodule Shaker.Resolver.Deps do
   Module to convert rebar deps to mix deps
   """
 
+  @behaviour Shaker.Resolver
+
   def convert(dep_name) when is_atom(dep_name) do
     {:ok, {dep_name, ">= 0.0.0"}}
   end

@@ -22,11 +22,10 @@ defmodule Mix.Tasks.Rebar2mix do
 
     Mix.shell().info("Starting generation")
 
-    model = %Model{}
 
     Mix.shell().info("Model created, filling...")
     model =
-      model
+      %Model{}
       |> Shaker.Parsers.AppSrc.parse(root_path)
       |> Shaker.Parsers.RebarConfig.parse(root_path)
       |> Model.put(:language, :erlang)
