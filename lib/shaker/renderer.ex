@@ -10,7 +10,7 @@ defmodule Shaker.Renderer do
       |> Macro.to_string()
       |> String.replace(~r/(defmodule|defp|def)\((.*)\) do/, "\\1 \\2 do")
       |> String.replace(~r/(defmodule|defp|def) (.*)\(\) do/, "\\1 \\2 do")
-      |> String.replace(~r/use\((.*)\)/, "use \\1")
+      |> String.replace(~r/(use|import|config)\((.*)\)\n/, "\\1 \\2\n")
 
     File.write!(file_name, string)
   end
