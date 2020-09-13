@@ -3,7 +3,7 @@ defmodule Shaker.Renderer do
   Renders quoted code to the file
   """
 
-  @spec render(Macto.t(), Path.t()) :: :ok
+  @spec render(Macro.t(), Path.t()) :: :ok
   def render(quoted, file_name) do
     File.write!(file_name, Macro.to_string(quoted))
   end

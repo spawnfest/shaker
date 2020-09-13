@@ -5,7 +5,7 @@ defmodule Shaker.Model.Mix do
 
   %{
     project: [
-      param1: ["$any": value1], #enviroment independant
+      param1: ["$anyenv": value1], #enviroment independant
       param2: [test: value1, dev: value2]
     ],
     application: [
