@@ -11,11 +11,14 @@ defmodule Mix.Tasks.Rebar2mix do
   alias Shaker.Generator.Mix, as: Generator
   alias Shaker.Renderer
 
-  def run(args) do
+  def run([]) do
+    run(["."])
+  end
+  def run([root_path]) do
+    run([root_path, "mix.exs"])
+  end
+  def run([root_path, filename]) do
     # TODO: Create an entrypoint
-
-    filename = "test_mix.exs"
-    root_path = "priv/hackney"
 
     Mix.shell().info("Starting generation")
 
@@ -28,8 +31,7 @@ defmodule Mix.Tasks.Rebar2mix do
       |> Shaker.Parsers.RebarConfig.parse(root_path)
       |> Model.put(:language, :erlang)
       |> ensure_dialyzer()
-
-    Shaker.Errors.render(model."$errors")
+      |> Shaker.Errors.render()
 
     Mix.shell().info("Model filling, writing...")
     name = mix_project_name(model)
