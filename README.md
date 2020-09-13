@@ -49,12 +49,18 @@ $ mix deps.get
 
 will be available to run as in a standart `mix` project.
 
+You can also run other task to generate `config.exs` file from `sys.config`
+
+```bash
+$ mix sys2config
+```
+
 ## Roadmap
 
 1. Improve the code quality - making refactoring, adding more tests, docs and specs
 2. Implementing more and more uncovered `Rebar3` features, untill full coverage.
 3. Relx
-4. `sys.config`
+4. `sys.config` detection
 5. Overrides handling
 
 ## Contributions
