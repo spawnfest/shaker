@@ -4,7 +4,7 @@ defmodule Shaker.Generator.Function do
   Generates quoted def-functions
   """
 
-  @type option :: {atom(), boolean()}
+  @type option :: {:no_escape, boolean()} | {:private, boolean()}
   @type options :: [option()]
 
   @spec gen_one(atom(), any(), options()) :: Macro.t()
@@ -20,12 +20,12 @@ defmodule Shaker.Generator.Function do
   end
 
   defp gen_func(name, args, body, opts) do
-    body = if(not !!opts[:no_escape], do: Macro.escape(body), else: body)
+    body = if(opts[:no_escape], do: body, else: Macro.escape(body))
+    d = if(opts[:private], do: quote(do: defp), else: quote(do: def))
     quote do
-      def unquote(name)(unquote_splicing(args)) do
+      unquote(d)(unquote(name)(unquote_splicing(args))) do
         unquote(body)
       end
     end
   end
-
 end
