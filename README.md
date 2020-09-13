@@ -1,11 +1,12 @@
 # Shaker
 
-**Shaker** - CLI tools, that automates migrations from `Rebar3` into `Mix` for Erlang projects of any kind. It supports:
+**Shaker** - CLI tool, that automates migrations from `Rebar3` into `Mix` for Erlang projects of any kind. It supports:
 
 * Applications
-* Releases
 * Libraries
 * Escripts
+* Releases (not yet)
+* Erlang test-lint tools support (`eunit`, `ct`, `elvis`)
 * Any other tools you can imagine as an Erlang project
 
 ## The problem
@@ -39,6 +40,7 @@ This command must be executed inside any valid **Rebar3** project, with next eff
 For example
 
 ```bash
+$ mix deps.get
 $ iex -S mix
 $ mix test
 $ mix compile
@@ -51,3 +53,10 @@ will be available to run as in a standart `mix` project.
 
 1. Improve the code quality - making refactoring, adding more tests, docs and specs
 2. Implementing more and more uncovered `Rebar3` features, untill full coverage.
+3. Relx
+4. `sys.config`
+5. Overrides handling
+
+## Contributions
+
+Project is stiall in an active development phase so feel free to submit any Issues or Pull requests!
