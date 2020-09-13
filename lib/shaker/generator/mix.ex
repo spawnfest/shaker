@@ -1,5 +1,4 @@
 defmodule Shaker.Generator.Mix do
-
   @moduledoc """
   View for generating mix.exs file from prepared structure
   """
@@ -40,7 +39,9 @@ defmodule Shaker.Generator.Mix do
     [Function.gen_one(name, values, no_escape: true) | funcs]
   end
 
-  defp gen_func_or_value(key, ["$anyenv": value]) do
+  @spec gen_func_or_value(atom(), Keyword.t())
+  :: {:env_funcs, [{Macro.t(), any()}]} | {:value, any()} | {:func, Macro.t()}
+  defp gen_func_or_value(key, "$anyenv": value) do
     if get_kv_len(key, value) > @maxlen do
       {:func, Function.gen_one(key, value)}
     else
@@ -56,20 +57,22 @@ defmodule Shaker.Generator.Mix do
         _ ->
           pairs
       end
+
     {:env_funcs, Function.gen_clauses(key, clauses)}
   end
 
   @spec gen_module([Macro.t()], atom()) :: Macro.t()
   defp gen_module(functions, name) do
     quote do
-      defmodule unquote(name) do
+      defmodule unquote(name).MixProject do
+        use Mix.Project
         unquote_splicing(functions)
       end
     end
   end
 
+  @spec get_kv_len(atom(), any()) :: pos_integer()
   defp get_kv_len(key, value) do
     String.length(Atom.to_string(key)) + String.length(inspect(value))
   end
-
 end
