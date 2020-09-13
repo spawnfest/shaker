@@ -3,8 +3,13 @@ defmodule Mix.Tasks.Rebar2mix do
 
   @shortdoc "Generates mix.exs from rebar project"
   @moduledoc """
-  Generates mix.exs from rebar project
-  TODO
+  Generates mix.exs from rebar project. Automatically detects
+  umbrella, app.src, rebar.config
+
+  Usage:
+  ```
+  $ mix rebar2mix <root_path> <output_file> [--in-umbrella]
+  ```
   """
 
   @option_parser_params [strict: [in_umbrella: :boolean]]

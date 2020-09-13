@@ -4,6 +4,6 @@ defmodule Shaker.Model do
   Models are structures representing configs in different enviroments
   """
 
-  @type t :: Shaker.Model.Mix.t()
+  @type t :: Shaker.Model.Mix.t() | Shaker.Model.Config.t()
 
 end

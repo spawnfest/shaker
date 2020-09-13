@@ -1,7 +1,7 @@
 defmodule Shaker.Errors do
 
   @moduledoc """
-  Resolves occured errors
+  Resolves occured errors in model
   """
 
   @ignore_keys ~w[plugins xref_checks xref_queries
@@ -57,11 +57,11 @@ defmodule Shaker.Errors do
     model
   end
   defp render_one({k, _} = error, model) do
+    # Explicitly silences xref and cover params
     case Atom.to_string(k) do
-      "cover" <> _ ->
-        nil
-      _ ->
-        Mix.shell().info("Error: #{inspect error, pretty: true}")
+      "cover" <> _ -> nil
+      "xref" <> _ -> nil
+      _ -> Mix.shell().info("Error: #{inspect error, pretty: true}")
     end
     model
   end
