@@ -13,14 +13,6 @@ defmodule Shaker.Parsers.RebarConfig do
   alias Shaker.Resolver.Deps,     as: DepsResolver
   alias Shaker.Resolver.Dialyzer, as: DialyzerResolver
 
-  @spec umbrella?(project_root_path :: Path.t()) :: boolean()
-  def umbrella?(project_root_path) do
-    project_root_path
-    |> Path.join("apps")
-    |> Path.expand()
-    |> File.dir?()
-  end
-
   def parse(model, root_path) do
     case Common.read_from(root_path, @rebar_config_file_wildcard) do
       {:ok, rebar_config_keyword} -> do_parse(model, rebar_config_keyword)

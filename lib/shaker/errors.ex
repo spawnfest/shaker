@@ -37,6 +37,11 @@ defmodule Shaker.Errors do
       model
     end
   end
+  defp render_one({:vsn, vsn}, model) do
+    Mix.shell().error("Mix can't specify versions like #{inspect vsn}")
+    Mix.shell().info("Creating version 0.0.1")
+    Model.put(model, :version, "0.0.1")
+  end
   defp render_one(t, model) when is_tuple(t) and :erlang.element(1, t) in @ignore_keys, do: model
   defp render_one({:minimum_otp_version, _}, model) do
     Mix.shell().info("Mix doesn't support minimum otp version setting")
