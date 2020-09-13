@@ -43,7 +43,7 @@ defmodule Shaker.MixProject do
   defp deps do
     [
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
-      {:credo,    "~> 1.1",   only: :dev, runtime: false}
+      {:credo, "~> 1.1", only: :dev, runtime: false}
     ]
   end
 end

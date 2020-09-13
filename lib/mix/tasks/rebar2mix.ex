@@ -7,28 +7,12 @@ defmodule Mix.Tasks.Rebar2mix do
   TODO
   """
 
-  @option_parser_params [strict: [apps_root: :string, in_umbrella: :boolean]]
+  @option_parser_params [strict: [in_umbrella: :boolean]]
   @default_params %{in_umbrella: false}
 
   alias Shaker.Model.Mix, as: Model
   alias Shaker.Generator.Mix, as: Generator
   alias Shaker.Renderer
-
-  defp parse(args) do
-    with(
-      {parsed_params, argv, []} <- OptionParser.parse(args, @option_parser_params),
-      {:ok, argv} <- ensure_argv(argv)
-    ) do
-      {:ok, Map.merge(@default_params, Map.new(parsed_params)), argv}
-    else
-      _ -> {:error, :bad_params}
-    end
-  end
-
-  defp ensure_argv([]), do: {:ok, [".", "mix.exs"]}
-  defp ensure_argv([root]), do: {:ok, [root, "mix.exs"]}
-  defp ensure_argv([_, _] = x), do: {:ok, x}
-  defp ensure_argv(_), do: :error
 
   def run(args) do
     {opts, root_path, filename} =
@@ -64,6 +48,7 @@ defmodule Mix.Tasks.Rebar2mix do
     Mix.shell().info("Done")
   end
 
+  @spec ensure_umbrella(Model.t(), Path.t()) :: Model.t()
   defp ensure_umbrella(model, root_path) do
     if umbrella?(root_path) and Mix.shell().yes?("""
     Umbrella support is experimental and may be unstable, proceed?
@@ -75,6 +60,7 @@ defmodule Mix.Tasks.Rebar2mix do
     end
   end
 
+  @spec apply_opts(Model.t(), Map.t()) :: Model.t()
   defp apply_opts(model, opts) do
     Enum.reduce(opts, model, fn
       {:in_umbrella, true}, model ->
@@ -85,6 +71,7 @@ defmodule Mix.Tasks.Rebar2mix do
     end)
   end
 
+  @spec call_for_apps(Path.t()) :: Path.t()
   defp call_for_apps(root_path) do
     root_path
     |> Path.join("apps/*")
@@ -96,6 +83,7 @@ defmodule Mix.Tasks.Rebar2mix do
     end)
   end
 
+  @spec add_in_umbrella(Model.t()) :: Model.t()
   defp add_in_umbrella(model) do
     Model.put_pairs(model, [
       build_path: "../../_build",
@@ -105,6 +93,7 @@ defmodule Mix.Tasks.Rebar2mix do
     ])
   end
 
+  @spec mix_project_name(Model.t(), Path.t()) :: atom()
   defp mix_project_name(%{project: project}, root_path) do
     if umbrella?(root_path) do
       :"#{Mix.shell().prompt("Enter mix project name> ")}"
@@ -118,6 +107,7 @@ defmodule Mix.Tasks.Rebar2mix do
     end
   end
 
+  @spec ensure_dialyzer(Model.t()) :: Model.t()
   defp ensure_dialyzer(%{project: project} = model) do
     case Keyword.fetch(project, :dialyzer) do
       :error ->
@@ -135,5 +125,22 @@ defmodule Mix.Tasks.Rebar2mix do
     |> Path.expand()
     |> File.dir?()
   end
+
+  @spec parse([String.t()]) :: {:ok, Map.t(), [String.t()]} | {:error, :bad_params}
+  defp parse(args) do
+    with(
+      {parsed_params, argv, []} <- OptionParser.parse(args, @option_parser_params),
+      {:ok, argv} <- ensure_argv(argv)
+    ) do
+      {:ok, Map.merge(@default_params, Map.new(parsed_params)), argv}
+    else
+      _ -> {:error, :bad_params}
+    end
+  end
+
+  defp ensure_argv([]), do: {:ok, [".", "mix.exs"]}
+  defp ensure_argv([root]), do: {:ok, [root, "mix.exs"]}
+  defp ensure_argv([_, _] = x), do: {:ok, x}
+  defp ensure_argv(_), do: :error
 
 end
