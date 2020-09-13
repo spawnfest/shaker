@@ -4,7 +4,14 @@ defmodule Shaker.DepsResolver do
   end
 
   def convert({dep_name, dep_version}) when is_atom(dep_name) and is_list(dep_version) do
-    {:ok, {dep_name, "== #{dep_version}"}}
+    case Version.parse_requirement("#{dep_version}") do
+      {:ok, requirement} -> {:ok, {dep_name, "#{requirement}"}}
+      :error ->
+        case Version.parse("#{dep_version}") do
+          {:ok, version} -> {:ok, {dep_name, "== #{version}"}}
+          :error -> {:error, {:deps, :parse, {dep_name, dep_version}}}
+        end
+    end
   end
 
   # Source dependencies
@@ -24,17 +31,17 @@ defmodule Shaker.DepsResolver do
 
   # Hg is not supported
   def convert({dep_name, {:hg, _}}) when is_atom(dep_name) do
-    {:error, {:hg, dep_name}}
+    {:error, {:deps, :hg, dep_name}}
   end
   # HG with refs
   def convert({dep_name, {:hg, _, _}}) when is_atom(dep_name) do
-    {:error, {:hg, dep_name}}
+    {:error, {:deps, :hg, dep_name}}
   end
 
   def convert(dep_record) do
     case elem(dep_record, 0) do
       dep when is_atom(dep) -> {:error, {:unknown, dep}}
-      _ -> {:error, {:parse, dep_record}}
+      _ -> {:error, {:deps, :parse, dep_record}}
     end
   end
 end

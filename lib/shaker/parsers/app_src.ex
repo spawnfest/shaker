@@ -1,12 +1,12 @@
 defmodule Shaker.Parsers.AppSrc do
 
-  import Shaker.Parsers.Common
+  alias Shaker.Parsers.Common
 
   @app_src_file_wildcard "**/*.app.src"
   @autoloaded_erlang_applications MapSet.new([:kernel, :stdlib, :elixir])
 
   def parse(root_path) do
-    case read_from(root_path, @app_src_file_wildcard) do
+    case Common.read_from(root_path, @app_src_file_wildcard) do
       {:ok, [{:application, name, kw}]} -> {:ok, do_parse(name, kw)}
       error -> error
     end
