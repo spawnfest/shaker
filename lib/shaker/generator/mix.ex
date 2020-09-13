@@ -20,6 +20,7 @@ defmodule Shaker.Generator.Mix do
       gen_funcs(:project, proj)
     ]
     |> List.flatten()
+    |> sort_funcs()
     |> gen_module(name)
   end
 
@@ -46,9 +47,37 @@ defmodule Shaker.Generator.Mix do
 
   @spec gen_func_or_value(atom(), Keyword.t())
   :: {:env_funcs, [{Macro.t(), any()}]} | {:value, any()} | {:func, Macro.t()}
+# defp gen_func_or_value(:deps, envlist) do
+#   deps =
+#     Enum.reduce(envlist, %{}, fn {envname, deps}, final ->
+#       Enum.reduce(deps, final, fn {dep, opts}, acc ->
+#         Map.update(acc, dep, {[envname], opts}, fn {envnames, was_opts} ->
+#           {[envname | envnames], merge_vals(was_opts, opts)}
+#         end)
+#       end)
+#     end)
+#     |> Enum.map(fn {depname, {envnames, opts}} ->
+#       opts = List.wrap(opts)
+#       if :"$anyenv" in envnames do
+#         {depname, opts}
+#       else
+#         {depname, opts ++ [only: envnames]}
+#       end
+#     end)
+#     |> Enum.map(fn
+#       {depname, [bin]} when is_binary(bin) ->
+#         {depname, bin}
+#       {depname, [bin | opts]} when is_binary(bin) ->
+#         {depname, bin, opts}
+#       {depname, opts} ->
+#         {depname, opts}
+#     end)
+
+#   {:func, Function.gen_one(:deps, deps)}
+# end
   defp gen_func_or_value(key, "$anyenv": value) do
     if get_kv_len(key, value) > @maxlen do
-      {:func, Function.gen_one(key, value)}
+      {:func, Function.gen_one(key, value, private: true)}
     else
       {:value, value}
     end
@@ -70,7 +99,7 @@ defmodule Shaker.Generator.Mix do
           env_pairs
       end
 
-    {:env_funcs, Function.gen_clauses(key, clauses)}
+    {:env_funcs, Function.gen_clauses(key, clauses, private: true)}
   end
 
   @spec gen_module([Macro.t()], atom()) :: Macro.t()
@@ -84,6 +113,20 @@ defmodule Shaker.Generator.Mix do
     end
   end
 
+  @spec sort_funcs([Macro.t()]) :: Macro.t()
+  defp sort_funcs(functions) do
+    Enum.sort_by(functions, fn
+      {{:def, _, _,}, _, [{:project, _, _} | _]} ->
+        0
+
+      {{:def, _, _,}, _, [{:application, _, _} | _]} ->
+        1
+
+      other ->
+        other
+    end)
+  end
+
   @spec get_kv_len(atom(), any()) :: pos_integer()
   defp get_kv_len(key, value) do
     String.length(Atom.to_string(key)) + String.length(inspect(value))
@@ -93,7 +136,7 @@ defmodule Shaker.Generator.Mix do
     {kw1, v1} = split(vals1)
     {kw2, v2} = split(vals2)
 
-    Keyword.merge(kw1, kw2) ++ Enum.uniq(v1 ++ v2)
+    Enum.uniq(v1 ++ v2) ++ Keyword.merge(kw1, kw2)
   end
   defp merge_vals(_, vals2), do: vals2
 

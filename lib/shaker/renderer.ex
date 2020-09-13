@@ -5,7 +5,14 @@ defmodule Shaker.Renderer do
 
   @spec render(Macro.t(), Path.t()) :: :ok
   def render(quoted, file_name) do
-    File.write!(file_name, Macro.to_string(quoted))
+    string =
+      quoted
+      |> Macro.to_string()
+      |> String.replace(~r/(defmodule|defp|def)\((.*)\) do/, "\\1 \\2 do")
+      |> String.replace(~r/(defmodule|defp|def) (.*)\(\) do/, "\\1 \\2 do")
+      |> String.replace(~r/use\((.*)\)/, "use \\1")
+
+    File.write!(file_name, string)
   end
 
 end
