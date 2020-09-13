@@ -26,7 +26,10 @@ defmodule Mix.Tasks.Rebar2mix do
       model
       |> Shaker.Parsers.AppSrc.parse(root_path)
       |> Shaker.Parsers.RebarConfig.parse(root_path)
+      |> Model.put(:language, :erlang)
       |> ensure_dialyzer()
+
+    Shaker.Errors.render(model."$errors")
 
     Mix.shell().info("Model filling, writing...")
     name = mix_project_name(model)

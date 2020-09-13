@@ -119,6 +119,14 @@ defmodule Shaker.Parsers.RebarConfig do
     |> Model.add_errors(Keyword.get_values(resolved_dialyzer, :error))
   end
 
+  #Profiles
+  def proceed_rebar_config_entry({:profiles, profiles}, model) do
+    Enum.reduce(profiles, model, fn {env, config}, model ->
+      other = do_parse(%Model{}, config)
+      Model.merge_env(model, other, env)
+    end)
+  end
+
   # GENERAL Case
   def proceed_rebar_config_entry(unsupported, model) do
     Model.add_errors(model, [unsupported])

@@ -19,10 +19,7 @@ defmodule Shaker.Model.Mix do
     applications mod start_phases included_application maxT)a
 
   defstruct [
-    project: [
-      deps: ["$anyenv": []],
-      language: ["$anyenv": :erlang]
-    ],
+    project: [],
     application: [],
     "$errors": []
   ]
@@ -72,13 +69,24 @@ defmodule Shaker.Model.Mix do
   def put(model, param, value, env \\ :"$anyenv")
   def put(model, _, [], _), do: model
   def put(model, param, value, env) do
-    IO.inspect {param, value}
     update(model, param, fn _ -> value end, value, env)
   end
 
   @spec add_errors(t(), list()) :: t()
   def add_errors(%__MODULE__{"$errors": errors} = model, added_errors) do
     %{model | "$errors": added_errors ++ errors}
+  end
+
+  @spec merge_env(t(), t(), atom()) :: t()
+  def merge_env(%__MODULE__{} = into, %__MODULE__{
+    project:     project,
+    application: application,
+    "$errors":   errors,
+  }, env) do
+    Enum.reduce(project ++ application, into, fn {key, value}, model ->
+      put(model, key, Keyword.fetch!(value, :"$anyenv"), env)
+    end)
+    |> add_errors(errors)
   end
 
   # Helpers

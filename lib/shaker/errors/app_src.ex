@@ -1,7 +1,9 @@
-defmodule Shaker.Errors.AppSrc do
-  def render({key, value}) do
-    "`#{key}` record is not possible to proceed. Please, check it manualy. Defined values are: #{
-      inspect(value)
-    }"
+defmodule Shaker.Errors do
+
+  def render(errors) do
+    Enum.each(errors, fn error ->
+      IO.inspect error, label: :error
+    end)
   end
+
 end
