@@ -98,9 +98,8 @@ defmodule Shaker.Parsers.RebarConfig do
   end
 
   # Minimum OTP version
-  defp proceed_rebar_config_entry({:minimum_otp_version, _}, model) do
-    # FIXME is skiped for now
-    model
+  defp proceed_rebar_config_entry({:minimum_otp_version, _} = pair, model) do
+    Model.add_errors(model, [pair])
   end
 
   # Deps

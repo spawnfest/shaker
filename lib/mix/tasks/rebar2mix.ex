@@ -18,11 +18,7 @@ defmodule Mix.Tasks.Rebar2mix do
     run([root_path, "mix.exs"])
   end
   def run([root_path, filename]) do
-    # TODO: Create an entrypoint
-
     Mix.shell().info("Starting generation")
-
-
     Mix.shell().info("Model created, filling...")
     model =
       %Model{}
@@ -43,7 +39,7 @@ defmodule Mix.Tasks.Rebar2mix do
 
     Mix.Task.run("format", [filename])
 
-    Mix.shell().info("Have fun ;3")
+    Mix.shell().info("Done")
   end
 
   defp mix_project_name(%{project: project}) do

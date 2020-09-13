@@ -38,13 +38,16 @@ defmodule Shaker.Errors do
     end
   end
   defp render_one(t, model) when is_tuple(t) and :erlang.element(1, t) in @ignore_keys, do: model
+  defp render_one({:minimum_otp_version, _}, model) do
+    Mix.shell().info("Mix doesn't support minimum otp version setting")
+    model
+  end
   defp render_one({:relx, _}, model) do
     Mix.shell().error("Relx releases are not supported right now")
     model
   end
   defp render_one(error, model) do
-    Mix.shell().error("Mix can't handle `platform_define`, you must create workaround")
-    IO.inspect error, label: :error
+    Mix.shell().info("Error: #{inspect error, pretty: true}")
     model
   end
 
