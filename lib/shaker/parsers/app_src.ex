@@ -56,21 +56,24 @@ defmodule Shaker.Parsers.AppSrc do
     Model.put(model, :extra_applications, apps -- @autoloaded_erlang_applications)
   end
 
+  defp proceed_app_src_entry({:included_applications, apps}, model) do
+    Model.put(model, :included_applications, apps)
+  end
+
   defp proceed_app_src_entry({:env, env}, model) do
     # env goes inside application data
     Model.put(model, :env, env)
   end
 
-  defp proceed_app_src_entry({:licenses, licenses}, model) do
-    # licenses goes inside project's package data
-    licenses = Enum.map(licenses, &:erlang.list_to_binary/1)
-    Model.update(model, :package, & Map.put(&1, :licenses, licenses), %{licenses: licenses})
-  end
-
-  defp proceed_app_src_entry({:links, links}, model) do
-    # links goes inside project's package data
-    links = Enum.map(links, fn {name, value} -> {"#{name}", "#{value}"} end)
-    Model.update(model, :package, & Map.put(&1, :links, links), %{links: links})
+  @package_keys ~w[licenses links maintainers]a
+  defp proceed_app_src_entry({key, value}, model) when key in @package_keys do
+    value =
+      case value do
+        %{} -> Map.new(value, fn {k, v} -> {"#{k}", "#{v}"} end)
+        [{_, _} | _] -> Enum.map(value, fn {k, v} -> {"#{k}", "#{v}"} end)
+        [_ | _] -> Enum.map(value, &to_string/1)
+      end
+    Model.update(model, :package, & Map.put(&1, key, value), %{key => value})
   end
 
   # Registered goes here - it's skipped

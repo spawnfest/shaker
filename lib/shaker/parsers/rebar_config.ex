@@ -130,6 +130,14 @@ defmodule Shaker.Parsers.RebarConfig do
     |> Model.append(:preffered_cli_env, :ct, :test)
   end
 
+  #Elvis
+  defp proceed_rebar_config_entry({:elvis, conf}, model) do
+    model
+    |> Model.put(:elvis, conf)
+    |> Model.append(:deps, :mix_elvis, "~> 0.1", :test)
+    |> Model.append(:deps, :mix_elvis, "~> 0.1", :dev)
+  end
+
   # GENERAL Case
   defp proceed_rebar_config_entry(unsupported, model) do
     Model.add_errors(model, [unsupported])

@@ -27,15 +27,20 @@ defmodule Shaker.Errors do
     Mix.shell().error("Mix can't handle `platform_define`")
     model
   end
+  defp render_one({:overrides, _}, model) do
+    Mix.shell().error("Overrides are not supported right now")
+    model
+  end
   defp render_one({:edoc_opts, _}, model) do
-    Mix.shell().info("Can't add edoc")
-    if Mix.shell().yes?("Add ex_doc?") do
-      model
-      |> Model.append(:deps, :ex_doc, "~> 0.18.0", :dev)
-      |> Model.put(:docs, [])
-    else
-      model
-    end
+    Mix.shell().info("Can't add edoc, you can use ExDoc instead")
+    model
+    #if Mix.shell().yes?("Add ex_doc?") do
+      #model
+      #|> Model.append(:deps, :ex_doc, "~> 0.18.0", :dev)
+      #|> Model.put(:docs, [])
+    #else
+      #model
+    #end
   end
   defp render_one({:vsn, vsn}, model) do
     Mix.shell().error("Mix can't specify versions like #{inspect vsn}")
@@ -51,8 +56,13 @@ defmodule Shaker.Errors do
     Mix.shell().error("Relx releases are not supported right now")
     model
   end
-  defp render_one(error, model) do
-    Mix.shell().info("Error: #{inspect error, pretty: true}")
+  defp render_one({k, _} = error, model) do
+    case Atom.to_string(k) do
+      "cover" <> _ ->
+        nil
+      _ ->
+        Mix.shell().info("Error: #{inspect error, pretty: true}")
+    end
     model
   end
 

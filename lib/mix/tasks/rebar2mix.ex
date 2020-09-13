@@ -17,13 +17,9 @@ defmodule Mix.Tasks.Rebar2mix do
   def run(args) do
     {opts, root_path, filename} =
       case parse(args) do
-        {:ok, opts, [root_path, filename]} ->
-          {opts, root_path, filename}
-
-        _ ->
-          Mix.raise("Bad params. Refer to `mix help rebar2mix`")
+        {:ok, opts, [root_path, filename]} -> {opts, root_path, filename}
+        _ -> Mix.raise("Bad params. Refer to `mix help rebar2mix`")
       end
-      |> IO.inspect(label: :args)
     call(root_path, filename, opts)
   end
 
@@ -60,7 +56,7 @@ defmodule Mix.Tasks.Rebar2mix do
     end
   end
 
-  @spec apply_opts(Model.t(), Map.t()) :: Model.t()
+  @spec apply_opts(Model.t(), map()) :: Model.t()
   defp apply_opts(model, opts) do
     Enum.reduce(opts, model, fn
       {:in_umbrella, true}, model ->
@@ -71,7 +67,7 @@ defmodule Mix.Tasks.Rebar2mix do
     end)
   end
 
-  @spec call_for_apps(Path.t()) :: Path.t()
+  @spec call_for_apps(Path.t()) :: :ok
   defp call_for_apps(root_path) do
     root_path
     |> Path.join("apps/*")
@@ -95,15 +91,15 @@ defmodule Mix.Tasks.Rebar2mix do
 
   @spec mix_project_name(Model.t(), Path.t()) :: atom()
   defp mix_project_name(%{project: project}, root_path) do
-    if umbrella?(root_path) do
-      :"#{Mix.shell().prompt("Enter mix project name> ")}"
-    else
+    if not umbrella?(root_path) and Keyword.has_key?(project, :app) do
       project
       |> Keyword.fetch!(:app)
       |> Keyword.fetch!(:"$anyenv")
       |> Atom.to_string()
       |> Macro.camelize()
       |> String.to_atom()
+    else
+      :"#{Mix.shell().prompt("Enter mix project name> ")}"
     end
   end
 
@@ -126,7 +122,7 @@ defmodule Mix.Tasks.Rebar2mix do
     |> File.dir?()
   end
 
-  @spec parse([String.t()]) :: {:ok, Map.t(), [String.t()]} | {:error, :bad_params}
+  @spec parse([String.t()]) :: {:ok, map(), [String.t()]} | {:error, :bad_params}
   defp parse(args) do
     with(
       {parsed_params, argv, []} <- OptionParser.parse(args, @option_parser_params),

@@ -10,8 +10,13 @@ defmodule Shaker.Parsers.Common do
     |> Path.wildcard()
     |> Enum.filter(fn x -> not (x =~ "/deps/") end)
     |> case do
-      [path] -> :file.consult(path)
-      _ -> {:error, :bad_file}
+      [] ->
+        {:error, :bad_file}
+
+      paths ->
+        paths
+        |> select_from_many()
+        |> :file.consult()
     end
   end
 
@@ -23,5 +28,21 @@ defmodule Shaker.Parsers.Common do
         {k, v}
       end
     end)
+  end
+
+  @spec select_from_many([Path.t()]) :: Path.t()
+  defp select_from_many([path]), do: path
+  defp select_from_many(paths) do
+    Mix.shell().info("")
+    paths
+    |> Enum.with_index()
+    |> Enum.each(fn {path, index} ->
+      Mix.shell().info("#{index} #{path}")
+    end)
+    {index, _} =
+      Mix.shell().prompt("Please select right path (Enter number)> ")
+      |> Integer.parse()
+
+    Enum.at(paths, index)
   end
 end
