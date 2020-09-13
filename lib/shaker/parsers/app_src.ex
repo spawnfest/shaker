@@ -38,8 +38,12 @@ defmodule Shaker.Parsers.AppSrc do
     Model.put(model, :description, :erlang.list_to_binary(description))
   end
 
-  defp proceed_app_src_entry({:vsn, version}, model) do
-    Model.put(model, :version, :erlang.list_to_binary(version))
+  defp proceed_app_src_entry({:vsn, version} = pair, model) do
+    if is_list(version) and List.ascii_printable?(version) do
+      Model.put(model, :version, :erlang.list_to_binary(version))
+    else
+      Model.add_errors(model, [pair])
+    end
   end
 
   defp proceed_app_src_entry({:mod, mod}, model) do
