@@ -4,6 +4,8 @@ defmodule Shaker.Resolver.Dialyzer do
   Module to convert Dialyzer config to Dialyxir config
   """
 
+  @behaviour Shaker.Resolver
+
   @bad_configs ~w[plt_apps]a
 
   def convert({:warnings, warnings}) do

@@ -3,6 +3,8 @@ defmodule Shaker.Generator.Mix do
   View for generating mix.exs file from prepared structure
   """
 
+  @behaviour Shaker.Generator
+
   # 80 (max size of line)
   # - 2 * 3 (tabs)
   # - 3 (semicolon, space, comma)
