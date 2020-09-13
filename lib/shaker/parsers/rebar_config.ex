@@ -103,20 +103,12 @@ defmodule Shaker.Parsers.RebarConfig do
 
   # Deps
   def proceed_rebar_config_entry({:deps, deps_list}, model) do
-    resolved_deps = Enum.map(deps_list, &DepsResolver.convert/1)
-
-    model
-    |> Model.put(:deps, Keyword.get_values(resolved_deps, :ok))
-    |> Model.add_errors(Keyword.get_values(resolved_deps, :error))
+    resolve_with(model, :deps, deps_list, &DepsResolver.convert/1)
   end
 
   #Dialyzer
   def proceed_rebar_config_entry({:dialyzer, dialyzer_list}, model) do
-    resolved_dialyzer = Enum.map(dialyzer_list, &DialyzerResolver.convert/1)
-
-    model
-    |> Model.put(:dialyzer, Keyword.get_values(resolved_dialyzer, :ok))
-    |> Model.add_errors(Keyword.get_values(resolved_dialyzer, :error))
+    resolve_with(model, :dialyzer, dialyzer_list, &DialyzerResolver.convert/1)
   end
 
   #Profiles
@@ -127,8 +119,35 @@ defmodule Shaker.Parsers.RebarConfig do
     end)
   end
 
+  ### Tests
+
+  # Eunit
+  def proceed_rebar_config_entry({:eunit_opts, opts}, model) do
+    model
+    |> Model.append(:deps, :mix_eunit, "~> 0.2", :test)
+    |> Model.append(:preffered_cli_env, :eunit, :test)
+    |> Model.put(:eunit, [verbose: Keyword.has_key?(opts, :verbose)])
+  end
+
+  #Common test
+  def proceed_rebar_config_entry({k, _}, model
+  ) when k in ~w[ct_first_files ct_otps ct_readable]a do
+    model
+    |> Model.append(:deps, :ctex, "~> 0.1", :test)
+    |> Model.append(:preffered_cli_env, :ct, :test)
+  end
+
   # GENERAL Case
   def proceed_rebar_config_entry(unsupported, model) do
     Model.add_errors(model, [unsupported])
+  end
+
+  # Helpers
+
+  defp resolve_with(model, key, keyword, function) do
+    resolved = Enum.map(keyword, function)
+    model
+    |> Model.put(key, Keyword.get_values(resolved, :ok))
+    |> Model.add_errors(Keyword.get_values(resolved, :error))
   end
 end
