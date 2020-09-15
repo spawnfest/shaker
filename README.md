@@ -11,7 +11,7 @@
 
 ## The problem
 
-While **Mix** tools is perfect for both `Erlang` and `Elixir` projects, it's not so much distributed inside  `Erlang`'s world. One of the main reasons - severity of migration **allready existing** projects from one package manager into another.
+While **Mix** tools is perfect for both `Erlang` and `Elixir` projects, it's not so much distributed inside  `Erlang`'s world. One of the main reasons - severity of migration **already existing** projects from one package manager into another.
 
 This process *can* and *must* be automated. **Shaker** tries to eliminate this gap.
 
@@ -47,7 +47,7 @@ $ mix compile
 $ mix deps.get
 ```
 
-will be available to run as in a standart `mix` project.
+will be available to run as in a standard `mix` project.
 
 You can also run other task to generate `config.exs` file from `sys.config`
 
@@ -58,11 +58,11 @@ $ mix sys2config
 ## Roadmap
 
 1. Improve the code quality - making refactoring, adding more tests, docs and specs
-2. Implementing more and more uncovered `Rebar3` features, untill full coverage.
+2. Implementing more and more uncovered `Rebar3` features, until full coverage.
 3. Relx
 4. `sys.config` detection
 5. Overrides handling
 
 ## Contributions
 
-Project is stiall in an active development phase so feel free to submit any Issues or Pull requests!
+Project is still in an active development phase so feel free to submit any Issues or Pull requests!
